@@ -56,7 +56,9 @@ public class GenerateNode {
                 .map(SerializableDocument::getText)
                 .collect(Collectors.joining("\n\n---\n\n"));
 
-        String query = state.effectiveQuery();
+        // Always answer the original user question — effectiveQuery() may contain a
+        // rewritten retrieval query that should never be shown back to the user.
+        String query = state.query();
         log.info("Generating answer from {} document(s) for: {}", contextDocs.size(), query);
 
         String answer = builder.build().prompt(GENERATE_PROMPT.formatted(context, query)).call().content();

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -38,8 +39,14 @@ public class RewriteQueryNode {
         String original = state.effectiveQuery();
         log.info("Rewriting query (attempt {}): {}", state.retryCount() + 1, original);
 
-        String rewritten = builder.build().prompt(REWRITE_PROMPT.formatted(original)).call().content();
-        if (rewritten != null) rewritten = rewritten.trim();
+        String raw = builder.build().prompt(REWRITE_PROMPT.formatted(original)).call().content();
+        // Take the first non-blank line only — local LLMs often echo the prompt or add
+        // explanations instead of returning just the rewritten query.
+        String rewritten = raw == null ? null : Arrays.stream(raw.split("\\n"))
+                .map(String::trim)
+                .filter(l -> !l.isBlank())
+                .findFirst()
+                .orElse(original);
 
         log.info("Rewritten query: {}", rewritten);
 

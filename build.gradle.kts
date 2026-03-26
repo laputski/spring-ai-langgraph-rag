@@ -50,6 +50,23 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+// Unit / mock tests — run on every build, no running services required
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("e2e")
+    }
+}
+
+// E2E tests — require a fully running local environment (docker compose up -d + bootRun)
+// Usage: ./gradlew e2eTest
+//        ./gradlew e2eTest -Dapp.url=http://localhost:8080
+tasks.register<Test>("e2eTest") {
+    description = "Runs end-to-end tests against the running local environment."
+    group = "verification"
+    useJUnitPlatform {
+        includeTags("e2e")
+    }
+    systemProperty("app.url", System.getProperty("app.url", "http://localhost:8080"))
+    // Longer timeout — LLM inference can take 30–120s per request
+    jvmArgs("-Djunit.jupiter.execution.timeout.default=180s")
 }
