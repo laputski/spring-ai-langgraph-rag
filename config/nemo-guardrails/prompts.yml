@@ -1,0 +1,11 @@
+prompts:
+  - task: self_check_input
+    content: |
+      Your task is to check if the user message below is safe and on-topic
+      for a technical documentation assistant focused on software, infrastructure,
+      and technology topics (Spring Boot, Docker, Kubernetes, Java, databases, etc.).
+
+      User message: "{{ user_input }}"
+
+      Answer only YES if the message is safe and on-topic, or NO if it should be blocked.
+      Do NOT explain your answer.

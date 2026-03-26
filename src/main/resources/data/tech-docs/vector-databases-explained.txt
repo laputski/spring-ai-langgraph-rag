@@ -1,0 +1,79 @@
+Vector Databases Explained
+===========================
+
+A vector database is a specialized database optimized for storing and querying high-dimensional vectors (embeddings). It is the foundation of modern AI search, RAG (Retrieval-Augmented Generation), and semantic similarity applications.
+
+What Are Embeddings?
+--------------------
+
+Embeddings are numerical representations of data (text, images, audio) as vectors in a high-dimensional space. Semantically similar items are close together in this space.
+
+Example: "What is Spring Boot?" and "Spring Boot overview" produce embedding vectors with high cosine similarity, even though no words are shared.
+
+Embedding models like OpenAI's text-embedding-3-small or Nomic's nomic-embed-text convert text to float arrays (e.g., 768 or 1536 dimensions).
+
+How Vector Databases Work
+--------------------------
+
+1. Indexing: Documents are embedded and stored as vectors in an index.
+2. Querying: A query is embedded and the database finds vectors with the highest similarity.
+3. Similarity metrics: Cosine similarity, dot product, and Euclidean distance are common metrics.
+
+Vector databases use Approximate Nearest Neighbor (ANN) algorithms for efficient search at scale:
+- HNSW (Hierarchical Navigable Small World) — used by Qdrant, Weaviate, Pinecone
+- IVF (Inverted File Index) — used by FAISS
+- DiskANN — used by Azure AI Search
+
+Qdrant
+------
+
+Qdrant is an open-source vector database written in Rust. Key features:
+- HNSW index for fast ANN search
+- Rich filtering with payload conditions
+- Sparse vector support (for hybrid dense+sparse search)
+- Named vectors (multiple vector types per point)
+- Snapshots and on-disk storage
+- gRPC and REST APIs
+
+Creating a collection:
+  PUT /collections/tech-docs
+  {
+    "vectors": {
+      "size": 768,
+      "distance": "Cosine"
+    }
+  }
+
+RAG with Vector Databases
+--------------------------
+
+Retrieval-Augmented Generation (RAG) pattern:
+1. Ingest: Split documents → embed chunks → store in vector DB
+2. Retrieve: Embed user query → similarity search → top-k chunks
+3. Generate: Send chunks as context to LLM → LLM generates grounded answer
+
+Benefits of RAG over fine-tuning:
+- No expensive model retraining
+- Knowledge can be updated without touching the model
+- Source attribution possible
+- Works with any LLM
+
+Spring AI Integration
+---------------------
+
+Spring AI provides VectorStore abstraction with Qdrant implementation:
+
+  @Bean
+  public VectorStore vectorStore(QdrantClient client, EmbeddingModel embeddingModel) {
+      return QdrantVectorStore.builder(client, embeddingModel)
+          .collectionName("tech-docs")
+          .build();
+  }
+
+  // Store documents
+  vectorStore.add(List.of(new Document("text", metadata)));
+
+  // Similarity search
+  List<Document> results = vectorStore.similaritySearch(
+      SearchRequest.builder().query("What is Qdrant?").topK(5).build()
+  );

@@ -1,0 +1,99 @@
+services:
+
+  # ── Vector Store ────────────────────────────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.13.6
+    ports:
+      - "6333:6333"   # REST API (dashboard: http://localhost:6333/dashboard)
+      - "6334:6334"   # gRPC (used by Spring AI)
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Semantic Cache ──────────────────────────────────────────────────────────
+  valkey:
+    image: valkey/valkey:8.0
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    command: valkey-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── Input Guardrails (NeMo Guardrails) ─────────────────────────────────────
+  # Custom Dockerfile — no NVIDIA NGC account required
+  # Colang flows and config are mounted from ./config/nemo-guardrails/
+  nemo-guardrails:
+    build:
+      context: ./docker/nemo-guardrails
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./config/nemo-guardrails:/app/config:ro
+    command: >
+      nemoguardrails server
+      --config /app/config
+      --port 8001
+    environment:
+      # NeMo Guardrails uses an OpenAI-compatible LLM backend.
+      # We point it at the local Ollama instance running on the host machine.
+      OPENAI_API_KEY: "dummy"
+      OPENAI_API_BASE: "http://host.docker.internal:11434/v1"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/v1/rails/infos"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # ── Output Guardrails (Guardrails AI) ───────────────────────────────────────
+  # Custom Dockerfile — installs guardrails-ai from PyPI
+  # Guard configuration is mounted from ./config/guardrails-ai/
+  guardrails-ai:
+    build:
+      context: ./docker/guardrails-ai
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # Comma-separated list of words that trigger a toxic_language block.
+      # Empty by default (validation passes through without hub auth).
+      BLOCKED_WORDS: ""
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # ── Local LLM (optional — comment out if Ollama runs on host) ───────────────
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   # For GPU support uncomment:
+  #   # deploy:
+  #   #   resources:
+  #   #     reservations:
+  #   #       devices:
+  #   #         - driver: nvidia
+  #   #           capabilities: [gpu]
+
+volumes:
+  qdrant_storage:
+  valkey_data:
+  # ollama_data:

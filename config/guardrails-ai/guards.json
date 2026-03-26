@@ -1,0 +1,25 @@
+{
+  "guards": [
+    {
+      "id": "output-safety-guard",
+      "name": "OutputSafetyGuard",
+      "description": "Validates LLM output for toxic language and secrets exposure",
+      "validators": [
+        {
+          "id": "guardrails/toxic_language",
+          "on_fail": "refusal_message",
+          "args": {
+            "threshold": 0.5,
+            "validation_method": "sentence"
+          }
+        },
+        {
+          "id": "guardrails/secrets_present",
+          "on_fail": "refusal_message",
+          "args": {}
+        }
+      ]
+    }
+  ],
+  "refusal_message": "I cannot provide this response as it may contain inappropriate content."
+}

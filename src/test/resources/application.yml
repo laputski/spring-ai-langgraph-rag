@@ -1,0 +1,43 @@
+spring:
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      init:
+        pull-model-strategy: never   # Don't pull models during tests
+      chat:
+        options:
+          model: llama3.2
+      embedding:
+        options:
+          model: nomic-embed-text
+    vectorstore:
+      qdrant:
+        host: localhost
+        port: 6334
+        collection-name: tech-docs-test
+        initialize-schema: false     # Don't connect to Qdrant during tests
+        dimensions: 768
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+guardrails:
+  nemo:
+    base-url: http://localhost:8001
+    fail-open: true
+  guardrails-ai:
+    base-url: http://localhost:8000
+    fail-open: true
+
+cache:
+  similarity-threshold: 0.92
+  ttl: PT1H
+
+app:
+  seeder:
+    enabled: false
+
+logging:
+  level:
+    io.callicode.rag: DEBUG

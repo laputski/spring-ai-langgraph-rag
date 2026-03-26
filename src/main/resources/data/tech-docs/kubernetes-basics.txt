@@ -1,0 +1,94 @@
+Kubernetes Basics
+==================
+
+Kubernetes (K8s) is an open-source container orchestration platform that automates deployment, scaling, and management of containerized applications.
+
+Core Concepts
+-------------
+
+Pod
+The smallest deployable unit in Kubernetes. A pod encapsulates one or more containers that share network and storage resources. Pods are ephemeral — they can be created, destroyed, and replaced.
+
+Deployment
+A Deployment manages a set of identical pods. It ensures the desired number of replicas are running and handles rolling updates and rollbacks.
+
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: spring-app
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: spring-app
+    template:
+      metadata:
+        labels:
+          app: spring-app
+      spec:
+        containers:
+          - name: spring-app
+            image: myapp:1.0.0
+            ports:
+              - containerPort: 8080
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "250m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+
+Service
+A Service exposes pods as a network service. Types include:
+- ClusterIP: internal cluster access only
+- NodePort: external access via node port
+- LoadBalancer: external access via cloud load balancer
+
+ConfigMap and Secret
+ConfigMaps store non-sensitive configuration; Secrets store sensitive data (passwords, tokens). Both can be mounted as environment variables or files.
+
+Namespace
+Namespaces provide isolation for resources within a cluster. Common namespaces: default, kube-system, kube-public.
+
+Kubernetes for Spring Boot Applications
+-----------------------------------------
+
+Health Probes
+Kubernetes uses liveness and readiness probes to manage application health:
+
+  livenessProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /actuator/health/readiness
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 5
+
+Spring Boot Actuator exposes /actuator/health/liveness and /actuator/health/readiness automatically.
+
+Horizontal Pod Autoscaler (HPA)
+HPA automatically scales the number of pod replicas based on observed CPU/memory utilization or custom metrics:
+
+  kubectl autoscale deployment spring-app --cpu-percent=70 --min=2 --max=10
+
+Rolling Updates
+Kubernetes performs rolling updates by default — new pods start before old ones are terminated, ensuring zero downtime:
+
+  kubectl set image deployment/spring-app spring-app=myapp:2.0.0
+
+kubectl Key Commands
+---------------------
+
+kubectl get pods                    List pods
+kubectl describe pod <name>         Pod details and events
+kubectl logs <pod> -f               Stream pod logs
+kubectl exec -it <pod> -- bash      Shell into pod
+kubectl apply -f deployment.yml     Apply configuration
+kubectl rollout status deployment   Check rollout status
+kubectl rollout undo deployment     Rollback last rollout

@@ -1,0 +1,56 @@
+Java Virtual Threads (Project Loom)
+====================================
+
+Virtual threads are lightweight threads introduced as a stable feature in Java 21 (JEP 444). They enable high-throughput concurrent applications without the complexity of reactive or asynchronous programming.
+
+What Are Virtual Threads?
+--------------------------
+
+Traditional Java threads (platform threads) are OS threads — heavyweight, with ~1MB stack size, limited to thousands per JVM. Virtual threads are managed by the JVM, not the OS. They are extremely lightweight (~few KB), and you can create millions of them.
+
+Virtual threads use a small pool of carrier threads (OS threads) from ForkJoinPool. When a virtual thread blocks (e.g., on I/O), it is unmounted from its carrier thread, which can then run other virtual threads.
+
+How to Create Virtual Threads
+------------------------------
+
+  // Using Thread.ofVirtual()
+  Thread vt = Thread.ofVirtual().start(() -> System.out.println("Hello from virtual thread"));
+
+  // Using Executors
+  try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      executor.submit(() -> doWork());
+  }
+
+  // Spring Boot 3.2+ — enable globally in application.properties
+  spring.threads.virtual.enabled=true
+
+When to Use Virtual Threads
+-----------------------------
+
+Virtual threads excel at I/O-bound workloads:
+- HTTP server handling thousands of concurrent requests
+- Database query execution
+- File system operations
+- External API calls
+
+They do NOT help with CPU-bound workloads (computation-heavy tasks). For CPU-bound work, use parallel streams or ForkJoinPool.
+
+Limitations and Pitfalls
+--------------------------
+
+Pinning: Virtual threads can be pinned to carrier threads when blocking inside synchronized blocks or native methods. Use ReentrantLock instead of synchronized for lock-heavy code.
+
+ThreadLocal: Existing ThreadLocal usage works but may need review — each virtual thread has its own ThreadLocal values, which can lead to memory issues if many tasks use large ThreadLocal data.
+
+Thread Pool Sizing: Traditional thread pool sizing guidelines don't apply. With virtual threads, use unbounded or very large executors.
+
+Spring Boot and Virtual Threads
+---------------------------------
+
+Spring Boot 3.2 supports virtual threads natively. When enabled:
+- Tomcat uses a virtual-thread-per-request model
+- @Async methods run on virtual threads
+- Spring MVC blocking handlers benefit automatically
+
+Configuration:
+  spring.threads.virtual.enabled=true

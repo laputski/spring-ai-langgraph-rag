@@ -1,0 +1,80 @@
+Docker Compose Guide
+====================
+
+Docker Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a YAML file (docker-compose.yml) to configure your application's services, networks, and volumes.
+
+Core Concepts
+-------------
+
+Services
+Each container in a Compose application is called a service. A service defines how to run a container: which image to use, which ports to expose, environment variables, volumes, and dependencies.
+
+Networks
+By default, Compose creates a single network for your application. Services can communicate using their service names as hostnames.
+
+Volumes
+Volumes persist data across container restarts. Named volumes are managed by Docker; bind mounts map host directories into containers.
+
+Common docker-compose.yml Structure
+------------------------------------
+
+  version: "3.9"
+  services:
+    app:
+      image: myapp:latest
+      ports:
+        - "8080:8080"
+      environment:
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/mydb
+      depends_on:
+        db:
+          condition: service_healthy
+    db:
+      image: postgres:16
+      environment:
+        POSTGRES_DB: mydb
+        POSTGRES_USER: user
+        POSTGRES_PASSWORD: secret
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD", "pg_isready", "-U", "user"]
+        interval: 10s
+        retries: 5
+  volumes:
+    pgdata:
+
+Key Commands
+------------
+
+docker compose up -d        Start services in detached mode
+docker compose down         Stop and remove containers
+docker compose down -v      Also remove volumes (WARNING: data loss)
+docker compose logs -f      Stream logs from all services
+docker compose ps           List running services
+docker compose exec app sh  Open shell in running container
+docker compose build        Rebuild images
+
+Health Checks
+-------------
+
+Health checks ensure services are fully ready before dependent services start. The `condition: service_healthy` in depends_on waits for the health check to pass.
+
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+    start_period: 30s
+
+Profiles
+--------
+
+Compose profiles allow you to selectively start services. Define a profile on a service:
+
+  services:
+    debug-tools:
+      image: debugtools:latest
+      profiles: ["debug"]
+
+Run with: docker compose --profile debug up
