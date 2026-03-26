@@ -54,17 +54,14 @@ public class SelfRagState extends AgentState {
         return (rq == null || rq.isBlank()) ? query() : rq;
     }
 
-    @SuppressWarnings("unchecked")
     public List<SerializableDocument> semanticDocs() {
         return this.<List<SerializableDocument>>value(SEMANTIC_DOCS).orElse(List.of());
     }
 
-    @SuppressWarnings("unchecked")
     public List<SerializableDocument> keywordDocs() {
         return this.<List<SerializableDocument>>value(KEYWORD_DOCS).orElse(List.of());
     }
 
-    @SuppressWarnings("unchecked")
     public List<SerializableDocument> documents() {
         return this.<List<SerializableDocument>>value(DOCUMENTS).orElse(List.of());
     }

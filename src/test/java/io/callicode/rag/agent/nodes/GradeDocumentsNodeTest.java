@@ -48,7 +48,7 @@ class GradeDocumentsNodeTest {
         @SuppressWarnings("unchecked")
         List<SerializableDocument> gradedDocs = (List<SerializableDocument>) result.get(SelfRagState.DOCUMENTS);
         assertThat(gradedDocs).hasSize(1);
-        assertThat(gradedDocs.get(0).getMetadata()).containsEntry("relevant", true);
+        assertThat(gradedDocs.getFirst().getMetadata()).containsEntry("relevant", true);
     }
 
     @Test
@@ -71,6 +71,6 @@ class GradeDocumentsNodeTest {
 
         @SuppressWarnings("unchecked")
         List<SerializableDocument> gradedDocs = (List<SerializableDocument>) result.get(SelfRagState.DOCUMENTS);
-        assertThat(gradedDocs.get(0).getMetadata()).containsEntry("relevant", false);
+        assertThat(gradedDocs.getFirst().getMetadata()).containsEntry("relevant", false);
     }
 }

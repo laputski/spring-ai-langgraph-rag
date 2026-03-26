@@ -1,5 +1,6 @@
 package io.callicode.rag.agent;
 
+import lombok.Getter;
 import org.springframework.ai.document.Document;
 
 import java.io.Serial;
@@ -17,6 +18,7 @@ import java.util.Map;
  * full {@link Document} only when passed to the LLM or vector store.
  * </p>
  */
+@Getter
 public final class SerializableDocument implements Serializable {
 
     @Serial
@@ -42,10 +44,6 @@ public final class SerializableDocument implements Serializable {
     public Document toDocument() {
         return new Document(id, text, metadata);
     }
-
-    public String getId()                      { return id; }
-    public String getText()                    { return text; }
-    public HashMap<String, Object> getMetadata() { return metadata; }
 
     @Override
     public String toString() {

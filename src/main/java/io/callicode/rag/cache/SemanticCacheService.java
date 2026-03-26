@@ -45,7 +45,7 @@ public class SemanticCacheService {
         float[] queryEmbedding = embeddingModel.embed(query);
 
         Set<String> keys = redisTemplate.keys(KEY_PREFIX + "*");
-        if (keys == null || keys.isEmpty()) {
+        if (keys.isEmpty()) {
             return Optional.empty();
         }
 
@@ -66,7 +66,7 @@ public class SemanticCacheService {
         if (bestSimilarity >= props.getSimilarityThreshold() && bestKey != null) {
             CacheEntry hit = redisTemplate.opsForValue().get(bestKey);
             if (hit != null) {
-                log.debug("Semantic cache hit (similarity={:.3f}) for query: {}", bestSimilarity, query);
+                log.debug("Semantic cache hit (similarity={}) for query: {}", String.format("%.3f", bestSimilarity), query);
                 return Optional.of(hit.getAnswer());
             }
         }

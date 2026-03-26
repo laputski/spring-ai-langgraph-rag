@@ -6,10 +6,12 @@ import io.callicode.rag.api.dto.ChatResponse;
 import io.callicode.rag.cache.SemanticCacheService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.model.chat.client.autoconfigure.ChatClientAutoConfiguration;
 import org.springframework.ai.vectorstore.VectorStore;
 
 import java.util.List;
@@ -21,24 +23,25 @@ import static org.mockito.Mockito.*;
 
 /**
  * Integration tests for the full Self-RAG graph execution.
- * All external dependencies are mocked via @MockBean.
+ * All external dependencies are mocked via @MockitoBean.
  * Tests verify complete graph traversal paths.
  */
 @SpringBootTest
+@EnableAutoConfiguration(exclude = ChatClientAutoConfiguration.class)
 class GuardrailsIntegrationTest {
 
     @Autowired
     private SelfRagService selfRagService;
 
-    @MockBean
+    @MockitoBean
     private NemoGuardrailsClient nemoGuardrailsClient;
-    @MockBean
+    @MockitoBean
     private GuardrailsAiClient guardrailsAiClient;
-    @MockBean
+    @MockitoBean
     private VectorStore vectorStore;
-    @MockBean
+    @MockitoBean
     private SemanticCacheService semanticCacheService;
-    @MockBean
+    @MockitoBean(enforceOverride = false)
     private ChatClient.Builder chatClientBuilder;
 
     // ── Happy path ─────────────────────────────────────────────────────────────

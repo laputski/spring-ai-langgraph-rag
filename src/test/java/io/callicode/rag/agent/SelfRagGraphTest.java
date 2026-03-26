@@ -2,7 +2,6 @@ package io.callicode.rag.agent;
 
 import io.callicode.rag.agent.nodes.*;
 import io.callicode.rag.cache.SemanticCacheService;
-import io.callicode.rag.guardrails.GuardrailResult;
 import io.callicode.rag.guardrails.GuardrailsAiClient;
 import io.callicode.rag.guardrails.NemoGuardrailsClient;
 import org.bsc.langgraph4j.CompiledGraph;

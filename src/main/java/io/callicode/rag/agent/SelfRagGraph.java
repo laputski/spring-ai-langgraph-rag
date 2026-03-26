@@ -2,6 +2,7 @@ package io.callicode.rag.agent;
 
 import io.callicode.rag.agent.nodes.*;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.StateGraph;
@@ -72,6 +73,7 @@ public class SelfRagGraph {
     private final RewriteQueryNode       rewriteQueryNode;
     private final CacheResultNode        cacheResultNode;
 
+    @Getter
     private CompiledGraph<SelfRagState> compiledGraph;
 
     public SelfRagGraph(
@@ -169,7 +171,4 @@ public class SelfRagGraph {
         log.info("Self-RAG graph compiled successfully");
     }
 
-    public CompiledGraph<SelfRagState> getCompiledGraph() {
-        return compiledGraph;
-    }
 }
